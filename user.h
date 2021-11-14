@@ -24,6 +24,7 @@ extern char* sbrk(int);
 extern int sleep(int);
 extern int uptime(void);
 extern int date(struct rtcdate *);
+extern int dup2(int oldfd, int newfd);
 
 // ulib.c
 extern int stat(const char*, struct stat*);

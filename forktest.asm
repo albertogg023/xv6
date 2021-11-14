@@ -27,7 +27,7 @@ Desensamblado de la sección .text:
   2e:	89 e5                	mov    %esp,%ebp
   30:	53                   	push   %ebx
   31:	83 ec 0c             	sub    $0xc,%esp
-  34:	68 5c 03 00 00       	push   $0x35c
+  34:	68 64 03 00 00       	push   $0x364
   39:	6a 01                	push   $0x1
   3b:	e8 c0 ff ff ff       	call   0x0
   40:	83 c4 10             	add    $0x10,%esp
@@ -52,12 +52,12 @@ Desensamblado de la sección .text:
   7d:	eb ee                	jmp    0x6d
   7f:	83 ec 04             	sub    $0x4,%esp
   82:	68 e8 03 00 00       	push   $0x3e8
-  87:	68 9c 03 00 00       	push   $0x39c
+  87:	68 a4 03 00 00       	push   $0x3a4
   8c:	6a 01                	push   $0x1
   8e:	e8 6d ff ff ff       	call   0x0
   93:	e8 1a 02 00 00       	call   0x2b2
   98:	83 ec 08             	sub    $0x8,%esp
-  9b:	68 67 03 00 00       	push   $0x367
+  9b:	68 6f 03 00 00       	push   $0x36f
   a0:	6a 01                	push   $0x1
   a2:	e8 59 ff ff ff       	call   0x0
   a7:	e8 06 02 00 00       	call   0x2b2
@@ -65,7 +65,7 @@ Desensamblado de la sección .text:
   b1:	83 f8 ff             	cmp    $0xffffffff,%eax
   b4:	75 17                	jne    0xcd
   b6:	83 ec 08             	sub    $0x8,%esp
-  b9:	68 8e 03 00 00       	push   $0x38e
+  b9:	68 96 03 00 00       	push   $0x396
   be:	6a 01                	push   $0x1
   c0:	e8 3b ff ff ff       	call   0x0
   c5:	83 c4 10             	add    $0x10,%esp
@@ -73,7 +73,7 @@ Desensamblado de la sección .text:
   cb:	c9                   	leave  
   cc:	c3                   	ret    
   cd:	83 ec 08             	sub    $0x8,%esp
-  d0:	68 7b 03 00 00       	push   $0x37b
+  d0:	68 83 03 00 00       	push   $0x383
   d5:	6a 01                	push   $0x1
   d7:	e8 24 ff ff ff       	call   0x0
   dc:	e8 d1 01 00 00       	call   0x2b2
@@ -339,3 +339,6 @@ Desensamblado de la sección .text:
  352:	b8 16 00 00 00       	mov    $0x16,%eax
  357:	cd 40                	int    $0x40
  359:	c3                   	ret    
+ 35a:	b8 17 00 00 00       	mov    $0x17,%eax
+ 35f:	cd 40                	int    $0x40
+ 361:	c3                   	ret    
