@@ -72,9 +72,9 @@ sys_dup2(void)
  struct file *f_old,*f_new;
  int fd_new,fd_old;
 
- if(argfd(0,&fd_old,(struct file **)&f_old)<0)
+ if(argfd(0,&fd_old,(struct file **)&f_old)<0 || fd_old < 0)
  	return -1;
- if(argint(0,&fd_new)<0)
+ if(argint(1,&fd_new)<0 || fd_new<0)
  	return -1;
  if(fd_new == fd_old)
  	return fd_new;
