@@ -11,7 +11,7 @@ int
 sys_date(void){
     struct rtcdate * r = NULL;
 
-    if(argptr(0, (void**)r, sizeof(struct rtcdate)) < 0)
+    if(argptr(0, (void**)&r, sizeof(struct rtcdate)) < 0)
         return -1;
 
     cmostime(r);
