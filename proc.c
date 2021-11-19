@@ -231,7 +231,7 @@ exit(void)
   struct proc *p;
   int fd;
 
-  if(curproc == initproc)
+  if(curproc == initproc)   // si se quiere liberar el proceso inicial del sistema
     panic("init exiting");
 
   // Close all open files.
@@ -247,23 +247,23 @@ exit(void)
   end_op();
   curproc->cwd = 0;
 
-  acquire(&ptable.lock);
+  acquire(&ptable.lock);    // nos apropiamos de la ptable
 
-  // Parent might be sleeping in wait().
+  // Si mi padre esta en wait, se despierta 
   wakeup1(curproc->parent);
 
-  // Pass abandoned children to init.
+  // Los procesos huerfanos se los asignamos a init
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->parent == curproc){
-      p->parent = initproc;
-      if(p->state == ZOMBIE)
-        wakeup1(initproc);
+    if(p->parent == curproc){   // si el proceso analizado es un proceso hijo
+      p->parent = initproc; // asignamos el hijo a init
+      if(p->state == ZOMBIE)    // si el proceso hijo se encuentra en estado zombie
+        wakeup1(initproc); // despertamos a init para que libere el proceso
     }
   }
 
   // Jump into the scheduler, never to return.
-  curproc->state = ZOMBIE;
-  sched();
+  curproc->state = ZOMBIE; // ponemos en la ptable que el proceso ha hecho exit, poniendolo como un proceso zombie
+  sched();  // cambiamos al hilo planificador
   panic("zombie exit");
 }
 
@@ -276,38 +276,36 @@ wait(void)
   int havekids, pid;
   struct proc *curproc = myproc();
   
-  acquire(&ptable.lock);
-  for(;;){
-    // Scan through table looking for exited children.
+  acquire(&ptable.lock);    // nos apropiamos de la ptable
+  for(;;){ // buscamos hijos que hayan hecho exit
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->parent != curproc)
-        continue;
-      havekids = 1;
-      if(p->state == ZOMBIE){
-        // Found one.
-        pid = p->pid;
-        kfree(p->kstack);
+      if(p->parent != curproc)  // si el proceso analizado no es mi hijo
+        continue;   // pasamos al siguiente proceso
+      havekids = 1; // el proceso tiene al menos un hijo
+      if(p->state == ZOMBIE){   // si el proceso hijo se encuentra en estado zombie, es decir, ha hecho exit
+        pid = p->pid; // para el return
+        kfree(p->kstack); // liberamos su pila del kernel
         p->kstack = 0;
-        freevm(p->pgdir);
-        p->pid = 0;
+        freevm(p->pgdir);   // liberamos su memoria virtual
+        p->pid = 0; 
         p->parent = 0;
         p->name[0] = 0;
-        p->killed = 0;
-        p->state = UNUSED;
-        release(&ptable.lock);
+        p->killed = 0;  
+        p->state = UNUSED; // ponemos la entrada de la ptable como libre
+        release(&ptable.lock);  // liberamos la ptable
         return pid;
       }
     }
 
-    // No point waiting if we don't have any children.
+    // Si el proceso no tiene ningun hijo, liberamos la ptable y salimos de la funcion
     if(!havekids || curproc->killed){
       release(&ptable.lock);
       return -1;
     }
 
-    // Wait for children to exit.  (See wakeup1 call in proc_exit.)
-    sleep(curproc, &ptable.lock);  //DOC: wait-sleep
+    // Si el proceso tiene hijos pero no han hecho exit, el proceso se duerme hasta que un hijo que haga exit lo despierte
+    sleep(curproc, &ptable.lock); 
   }
 }
 
@@ -481,14 +479,13 @@ kill(int pid)
 {
   struct proc *p;
 
-  acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->pid == pid){
-      p->killed = 1;
-      // Wake process from sleep if necessary.
-      if(p->state == SLEEPING)
-        p->state = RUNNABLE;
-      release(&ptable.lock);
+  acquire(&ptable.lock);    // nos apropiamos de la ptable
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){   // la recorremos
+    if(p->pid == pid){  // el proceso se quiere mata a si mismo
+      p->killed = 1;    // el proceso lo marcamos como matado
+      if(p->state == SLEEPING)  // si el proceso esta durmiendo
+        p->state = RUNNABLE;    // lo despertamos para que se liberen sus recursos cuanto antes
+      release(&ptable.lock);    // liberamos la ptable
       return 0;
     }
   }
