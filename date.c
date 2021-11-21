@@ -7,9 +7,9 @@ main (int argc , char * argv [])
 struct rtcdate r ;
 if ( date (& r ) ) {
 printf (2 , "date failed \n") ;
-exit () ;
+exit (0) ;
 }
 printf(1, "%d/%d/%d", r.day, r.month, r.year);
 // Pon aqu í tu có digo para imprimir la fecha en el formato que desees
-exit () ;
+exit (0) ;
 }

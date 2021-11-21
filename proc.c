@@ -223,7 +223,7 @@ fork(void)
 
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state
-// until its parent calls wait() to find out it exited.
+// until its parent calls wait(0) to find out it exited.
 void
 exit(void)
 {
@@ -249,7 +249,7 @@ exit(void)
 
   acquire(&ptable.lock);
 
-  // Parent might be sleeping in wait().
+  // Parent might be sleeping in wait(0).
   wakeup1(curproc->parent);
 
   // Pass abandoned children to init.
