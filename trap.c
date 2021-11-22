@@ -80,7 +80,7 @@ trap(struct trapframe *tf)
 
   //PAGEBREAK: 13
   default:
-    if(myproc() == 0 || (tf->cs&3) == 0){
+    if(myproc() == 0 || (tf->cs&3) == 0){ // estudiar condiciones y permitir ejecuciones en x casos [(si estamos en el kernel), (2 primeros bits que indican anillo del proceso)]
       // In kernel, it must be our mistake.
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
@@ -91,7 +91,12 @@ trap(struct trapframe *tf)
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
-    myproc()->killed = 1;
+    
+    // Asignamos memoria
+    char * mem = kalloc(); // reservamos memoria
+    mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U); // mapeamos lo reservado a la direccion virtual que habia provocado la excepcion
+   
+    // myproc()->killed = 1; lo comentamos pues la excepcion sabemos que tenia que salir al cambiar el esquema de reservas de memoria
   }
 
   // Force process exit if it has been killed and is in user space.

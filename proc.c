@@ -162,15 +162,15 @@ growproc(int n)
   struct proc *curproc = myproc();
 
   sz = curproc->sz;
-  if(n > 0){
-    if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)
+  if(n > 0){    // si el tamano a crecer es positivo
+    if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)    // aumentamos la memoria del proceso
       return -1;
-  } else if(n < 0){
-    if((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0)
+  } else if(n < 0) { // si es negativo
+    if((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0)  // quitamos memoria del proceso
       return -1;
   }
   curproc->sz = sz;
-  lcr3(V2P(curproc->pgdir));  // Invalidate TLB.
+  lcr3(V2P(curproc->pgdir));  // invalidamos todas las entradas del TLB (la direccion de la T.P del primer nivel sigue siendo la misma)
   return 0;
 }
 

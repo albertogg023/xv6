@@ -120,7 +120,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
-
+int             mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);  // hemos quitado que sea static
 // swtch.S
 void            swtch(struct context**, struct context*);
 

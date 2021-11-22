@@ -53,12 +53,12 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
   }
   return &pgtab[PTX(va)];
 }
-
+ 
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
-static int
-mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
+int
+mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)  // hemos quitado que sea static
 {
   char *a, *last;
   pte_t *pte;
@@ -219,26 +219,26 @@ loaduvm(pde_t *pgdir, char *addr, struct inode *ip, uint offset, uint sz)
 // Allocate page tables and physical memory to grow process from oldsz to
 // newsz, which need not be page aligned.  Returns new size or 0 on error.
 int
-allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
+allocuvm(pde_t *pgdir, uint oldsz, uint newsz) 
 {
   char *mem;
   uint a;
 
-  if(newsz >= KERNBASE)
-    return 0;
-  if(newsz < oldsz)
-    return oldsz;
+  if(newsz >= KERNBASE) // si intentas reservar tanto que interfieres al kernel
+    return 0;   // no se hace nada
+  if(newsz < oldsz) // si newsz es menor que oldsz
+    return oldsz;   // devolvemos oldsz
 
-  a = PGROUNDUP(oldsz);
-  for(; a < newsz; a += PGSIZE){
-    mem = kalloc();
-    if(mem == 0){
+  a = PGROUNDUP(oldsz); 
+  for(; a < newsz; a += PGSIZE){    
+    mem = kalloc(); // reserva memoria
+    if(mem == 0){   // si no se ha podido reservar
       cprintf("allocuvm out of memory\n");
       deallocuvm(pgdir, newsz, oldsz);
       return 0;
     }
     memset(mem, 0, PGSIZE);
-    if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+    if(mappages(pgdir, (char*)a, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){   // comprobamos si se ha podido mapear lo reservado
       cprintf("allocuvm out of memory (2)\n");
       deallocuvm(pgdir, newsz, oldsz);
       kfree(mem);
