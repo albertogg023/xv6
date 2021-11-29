@@ -36,6 +36,7 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+  // Llamadas al sistema
   if(tf->trapno == T_SYSCALL){
     if(myproc()->killed)
       exit();
@@ -45,7 +46,7 @@ trap(struct trapframe *tf)
       exit();
     return;
   }
-
+  // Interrupciones HW
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     if(cpuid() == 0){

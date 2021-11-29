@@ -376,14 +376,14 @@ bmap(struct inode *ip, uint bn)
   uint addr, *a;
   struct buf *bp;
 
-  if(bn < NDIRECT){
-    if((addr = ip->addrs[bn]) == 0)
-      ip->addrs[bn] = addr = balloc(ip->dev);
+  if(bn < NDIRECT){ // si se encuentra en la seccion de los bloques simplemente directos
+    if((addr = ip->addrs[bn]) == 0) // si no estaba estaba mapeada esta zona, por ejemplo al write escribir necesitando un nuevo bloque de disco
+      ip->addrs[bn] = addr = balloc(ip->dev); // le damos un sector libre del disco
     return addr;
   }
   bn -= NDIRECT;
 
-  if(bn < NINDIRECT){
+  if(bn < NINDIRECT){   // si se encuentra en la seccion de los bloques simplemente indirectos
     // Load indirect block, allocating if necessary.
     if((addr = ip->addrs[NDIRECT]) == 0)
       ip->addrs[NDIRECT] = addr = balloc(ip->dev);
@@ -395,6 +395,14 @@ bmap(struct inode *ip, uint bn)
     }
     brelse(bp);
     return addr;
+  }
+   
+  // TODO: HAY QUE IMPLEMENTAR BTI
+  bn -= NINDIRECT;
+  if(bn < NINDIRECT*NINDIRECT){
+     if((addr = ip->addrs[NDIRECT+1]) == 0){
+        // puede que haya que hacer dos veces balloc   
+     }
   }
 
   panic("bmap: out of range");
@@ -430,6 +438,10 @@ itrunc(struct inode *ip)
     bfree(ip->dev, ip->addrs[NDIRECT]);
     ip->addrs[NDIRECT] = 0;
   }
+   
+    // TODO: HAY QUE IMPLEMENTAR LIBERACION BTI
+    if (ip->addrs[NDIRECT+1]){
+    }
 
   ip->size = 0;
   iupdate(ip);

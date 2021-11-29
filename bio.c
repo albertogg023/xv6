@@ -28,7 +28,7 @@
 
 struct {
   struct spinlock lock;
-  struct buf buf[NBUF];
+  struct buf buf[NBUF]; // array que almacena las lecturas de dispositivos
 
   // Linked list of all buffers, through prev/next.
   // head.next is most recently used.

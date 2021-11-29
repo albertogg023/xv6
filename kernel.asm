@@ -2073,16 +2073,16 @@ skipelem(char *path, char *name)
 80101133:	83 ec 1c             	sub    $0x1c,%esp
 80101136:	89 c3                	mov    %eax,%ebx
 80101138:	89 d7                	mov    %edx,%edi
-  if(bn < NDIRECT){
-8010113a:	83 fa 0b             	cmp    $0xb,%edx
+  if(bn < NDIRECT){ // si se encuentra en la seccion de los bloques simplemente directos
+8010113a:	83 fa 0a             	cmp    $0xa,%edx
 8010113d:	76 45                	jbe    80101184 <bmap+0x57>
   bn -= NDIRECT;
-8010113f:	8d 72 f4             	lea    -0xc(%edx),%esi
-  if(bn < NINDIRECT){
+8010113f:	8d 72 f5             	lea    -0xb(%edx),%esi
+  if(bn < NINDIRECT){   // si se encuentra en la seccion de los bloques simplemente indirectos
 80101142:	83 fe 7f             	cmp    $0x7f,%esi
 80101145:	77 7f                	ja     801011c6 <bmap+0x99>
     if((addr = ip->addrs[NDIRECT]) == 0)
-80101147:	8b 80 8c 00 00 00    	mov    0x8c(%eax),%eax
+80101147:	8b 80 88 00 00 00    	mov    0x88(%eax),%eax
 8010114d:	85 c0                	test   %eax,%eax
 8010114f:	74 4a                	je     8010119b <bmap+0x6e>
     bp = bread(ip->dev, addr);
@@ -2112,11 +2112,11 @@ skipelem(char *path, char *name)
 80101181:	5f                   	pop    %edi
 80101182:	5d                   	pop    %ebp
 80101183:	c3                   	ret    
-    if((addr = ip->addrs[bn]) == 0)
+    if((addr = ip->addrs[bn]) == 0) // si no estaba estaba mapeada esta zona, por ejemplo al write escribir necesitando un nuevo bloque de disco
 80101184:	8b 74 90 5c          	mov    0x5c(%eax,%edx,4),%esi
 80101188:	85 f6                	test   %esi,%esi
 8010118a:	75 ee                	jne    8010117a <bmap+0x4d>
-      ip->addrs[bn] = addr = balloc(ip->dev);
+      ip->addrs[bn] = addr = balloc(ip->dev); // le damos un sector libre del disco
 8010118c:	8b 00                	mov    (%eax),%eax
 8010118e:	e8 b5 fe ff ff       	call   80101048 <balloc>
 80101193:	89 c6                	mov    %eax,%esi
@@ -2126,7 +2126,7 @@ skipelem(char *path, char *name)
       ip->addrs[NDIRECT] = addr = balloc(ip->dev);
 8010119b:	8b 03                	mov    (%ebx),%eax
 8010119d:	e8 a6 fe ff ff       	call   80101048 <balloc>
-801011a2:	89 83 8c 00 00 00    	mov    %eax,0x8c(%ebx)
+801011a2:	89 83 88 00 00 00    	mov    %eax,0x88(%ebx)
 801011a8:	eb a7                	jmp    80101151 <bmap+0x24>
       a[bn] = addr = balloc(ip->dev);
 801011aa:	8b 03                	mov    (%ebx),%eax
@@ -2512,23 +2512,24 @@ skipelem(char *path, char *name)
 80101508:	89 c6                	mov    %eax,%esi
   for(i = 0; i < NDIRECT; i++){
 8010150a:	bb 00 00 00 00       	mov    $0x0,%ebx
-8010150f:	eb 03                	jmp    80101514 <itrunc+0x15>
-80101511:	83 c3 01             	add    $0x1,%ebx
-80101514:	83 fb 0b             	cmp    $0xb,%ebx
-80101517:	7f 19                	jg     80101532 <itrunc+0x33>
-    if(ip->addrs[i]){
-80101519:	8b 54 9e 5c          	mov    0x5c(%esi,%ebx,4),%edx
-8010151d:	85 d2                	test   %edx,%edx
-8010151f:	74 f0                	je     80101511 <itrunc+0x12>
+8010150f:	eb 12                	jmp    80101523 <itrunc+0x24>
       bfree(ip->dev, ip->addrs[i]);
-80101521:	8b 06                	mov    (%esi),%eax
-80101523:	e8 92 fd ff ff       	call   801012ba <bfree>
+80101511:	8b 06                	mov    (%esi),%eax
+80101513:	e8 a2 fd ff ff       	call   801012ba <bfree>
       ip->addrs[i] = 0;
-80101528:	c7 44 9e 5c 00 00 00 	movl   $0x0,0x5c(%esi,%ebx,4)
-8010152f:	00 
+80101518:	c7 44 9e 5c 00 00 00 	movl   $0x0,0x5c(%esi,%ebx,4)
+8010151f:	00 
+  for(i = 0; i < NDIRECT; i++){
+80101520:	83 c3 01             	add    $0x1,%ebx
+80101523:	83 fb 0a             	cmp    $0xa,%ebx
+80101526:	7f 0a                	jg     80101532 <itrunc+0x33>
+    if(ip->addrs[i]){
+80101528:	8b 54 9e 5c          	mov    0x5c(%esi,%ebx,4),%edx
+8010152c:	85 d2                	test   %edx,%edx
+8010152e:	74 f0                	je     80101520 <itrunc+0x21>
 80101530:	eb df                	jmp    80101511 <itrunc+0x12>
   if(ip->addrs[NDIRECT]){
-80101532:	8b 86 8c 00 00 00    	mov    0x8c(%esi),%eax
+80101532:	8b 86 88 00 00 00    	mov    0x88(%esi),%eax
 80101538:	85 c0                	test   %eax,%eax
 8010153a:	75 1b                	jne    80101557 <itrunc+0x58>
   ip->size = 0;
@@ -2575,10 +2576,10 @@ skipelem(char *path, char *name)
 80101590:	e8 4c ec ff ff       	call   801001e1 <brelse>
     bfree(ip->dev, ip->addrs[NDIRECT]);
 80101595:	8b 06                	mov    (%esi),%eax
-80101597:	8b 96 8c 00 00 00    	mov    0x8c(%esi),%edx
+80101597:	8b 96 88 00 00 00    	mov    0x88(%esi),%edx
 8010159d:	e8 18 fd ff ff       	call   801012ba <bfree>
     ip->addrs[NDIRECT] = 0;
-801015a2:	c7 86 8c 00 00 00 00 	movl   $0x0,0x8c(%esi)
+801015a2:	c7 86 88 00 00 00 00 	movl   $0x0,0x88(%esi)
 801015a9:	00 00 00 
 801015ac:	83 c4 10             	add    $0x10,%esp
 801015af:	eb 8b                	jmp    8010153c <itrunc+0x3d>
@@ -2969,7 +2970,7 @@ skipelem(char *path, char *name)
 80101918:	03 45 14             	add    0x14(%ebp),%eax
 8010191b:	0f 82 ec 00 00 00    	jb     80101a0d <writei+0x121>
   if(off + n > MAXFILE*BSIZE)
-80101921:	3d 00 18 01 00       	cmp    $0x11800,%eax
+80101921:	3d 00 16 81 00       	cmp    $0x811600,%eax
 80101926:	0f 87 e8 00 00 00    	ja     80101a14 <writei+0x128>
   for(tot=0; tot<n; tot+=m, off+=m, src+=m){
 8010192c:	bf 00 00 00 00       	mov    $0x0,%edi
@@ -3458,7 +3459,7 @@ idestart(struct buf *b)
     panic("idestart");
   if(b->blockno >= FSSIZE)
 80101cda:	8b 58 08             	mov    0x8(%eax),%ebx
-80101cdd:	81 fb e7 03 00 00    	cmp    $0x3e7,%ebx
+80101cdd:	81 fb 1f 4e 00 00    	cmp    $0x4e1f,%ebx
 80101ce3:	0f 87 8d 00 00 00    	ja     80101d76 <idestart+0xab>
   int read_cmd = (sector_per_block == 1) ? IDE_CMD_READ :  IDE_CMD_RDMUL;
   int write_cmd = (sector_per_block == 1) ? IDE_CMD_WRITE : IDE_CMD_WRMUL;
@@ -10076,6 +10077,7 @@ trap(struct trapframe *tf)
 80105079:	53                   	push   %ebx
 8010507a:	83 ec 1c             	sub    $0x1c,%esp
 8010507d:	8b 5d 08             	mov    0x8(%ebp),%ebx
+  // Llamadas al sistema
   if(tf->trapno == T_SYSCALL){
 80105080:	8b 43 30             	mov    0x30(%ebx),%eax
 80105083:	83 f8 40             	cmp    $0x40,%eax
@@ -10084,7 +10086,7 @@ trap(struct trapframe *tf)
       exit();
     return;
   }
-
+  // Interrupciones HW
   switch(tf->trapno){
 80105088:	83 e8 20             	sub    $0x20,%eax
 8010508b:	83 f8 1f             	cmp    $0x1f,%eax

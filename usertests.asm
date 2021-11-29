@@ -390,7 +390,7 @@ Desensamblado de la sección .text:
      5f2:	78 37                	js     0x62b
      5f4:	89 c6                	mov    %eax,%esi
      5f6:	bb 00 00 00 00       	mov    $0x0,%ebx
-     5fb:	81 fb 8b 00 00 00    	cmp    $0x8b,%ebx
+     5fb:	81 fb 8a 40 00 00    	cmp    $0x408a,%ebx
      601:	77 67                	ja     0x66a
      603:	89 1d a0 89 00 00    	mov    %ebx,0x89a0
      609:	83 ec 04             	sub    $0x4,%esp
@@ -449,7 +449,7 @@ Desensamblado de la sección .text:
      6d5:	e8 f1 37 00 00       	call   0x3ecb
      6da:	c7 04 24 00 00 00 00 	movl   $0x0,(%esp)
      6e1:	e8 94 36 00 00       	call   0x3d7a
-     6e6:	81 fb 8b 00 00 00    	cmp    $0x8b,%ebx
+     6e6:	81 fb 8a 40 00 00    	cmp    $0x408a,%ebx
      6ec:	74 39                	je     0x727
      6ee:	83 ec 0c             	sub    $0xc,%esp
      6f1:	56                   	push   %esi
