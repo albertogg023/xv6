@@ -41,3 +41,7 @@ extern void free(void*);
 extern int atoi(const char*);
 
 #define NULL 0
+#define WIFEXITED ( status ) ((( status ) & 0 x7f ) == 0)
+#define WEXITSTATUS ( status ) ((( status ) & 0 xff00 ) >> 8)
+#define WIFSIGNALED ( status ) ((( status ) & 0 x7f ) != 0)
+#define WEXITTRAP ( status ) ((( status ) & 0 x7f ) - 1)

@@ -29,6 +29,8 @@ sys_fork(void)
 int
 sys_exit(void)
 {
+  // sacamos status  
+  // desplazar status
   exit();
   return 0;  // not reached
 }
@@ -36,6 +38,8 @@ sys_exit(void)
 int
 sys_wait(void)
 {
+  // sacamos status
+  // desplazar status  
   return wait();
 }
 
