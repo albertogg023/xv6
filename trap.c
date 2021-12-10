@@ -88,7 +88,7 @@ trap(struct trapframe *tf)
         if(mem == 0){   // si no se ha podido reservar
             cprintf("allocuvm out of memory\n");
             deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
-            return 0;
+            //return 0;
         }
         memset(mem, 0, PGSIZE); 
         // Mapeamos lo reservado a la direccion virtual que habia provocado la excepcion
@@ -97,7 +97,7 @@ trap(struct trapframe *tf)
             deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
             kfree(mem);
             // MATAMOS AL PROCESO ¿?¿?¿?
-            return 0;
+           //return 0;
         }
         cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());

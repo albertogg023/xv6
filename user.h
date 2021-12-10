@@ -4,7 +4,7 @@ struct rtcdate;
 // system calls
 extern int fork(void);
 extern int exit(int) __attribute__((noreturn));
-extern int wait(int);
+extern int wait(int*);
 extern int pipe(int*);
 extern int write(int, const void*, int);
 extern int read(int, void*, int);
