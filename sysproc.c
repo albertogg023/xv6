@@ -30,10 +30,10 @@ int
 sys_exit(void)
 {
   int status;
-  // sacamos status  
-  // desplazar status
   if(argint(0, &status) < 0)
     return -1;
+  status = status << 8;
+  myproc()->status = status;
   exit(status);
   return 0;  // not reached
 }

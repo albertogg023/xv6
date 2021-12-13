@@ -39,11 +39,11 @@ trap(struct trapframe *tf)
   // Llamadas al sistema
   if(tf->trapno == T_SYSCALL){
     if(myproc()->killed)
-      exit(tf->trapno);
+      exit(tf->trapno++);
     myproc()->tf = tf;
     syscall();
     if(myproc()->killed)
-      exit(tf->trapno);
+      exit(tf->trapno++);
     return;
   }
   // Interrupciones HW
@@ -115,7 +115,7 @@ trap(struct trapframe *tf)
   // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
-    exit(tf->trapno);
+    exit(tf->trapno++);
 
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
@@ -125,5 +125,5 @@ trap(struct trapframe *tf)
 
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
-    exit(tf->trapno);
+    exit(tf->trapno++);
 }
