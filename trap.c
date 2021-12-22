@@ -79,7 +79,47 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
 
-  //PAGEBREAK: 13
+  //PAGEBREAK: 14
+  // Fallo de pagina
+  case 14:
+    // comprobamos la direccion que ha provocado el error
+    // Estos son casos de error, ¿matamos proceso?
+    if(rcr2() > KERNBASE || rcr2() > myproc()->sz)
+    	myproc()->killed = 1;
+    else{
+	char * mem = kalloc(); // reservamos memoria
+	mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U);
+    }
+    cprintf("pid %d %s: trap %d err %d on cpu %d "
+            "eip 0x%x addr 0x%x--kill proc\n",
+            myproc()->pid, myproc()->name, tf->trapno,
+            tf->err, cpuid(), tf->eip, rcr2());
+        // In kernel, it must be our mistake.
+        // Asignamos memoria
+        /*
+        if(mem == 0){   // si no se ha podido reservar
+            cprintf("allocuvm out of memory\n");
+            deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
+            //return 0;
+        }
+        memset(mem, 0, PGSIZE);
+        // Mapeamos lo reservado a la direccion virtual que habia provocado la excepcion
+        if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U)) {   // comprobamos si se ha podido mapear lo reservado
+            cprintf("allocuvm out of memory (2)\n");
+            deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
+            kfree(mem);
+            // MATAMOS AL PROCESO ¿?¿?¿?
+           //return 0;
+        }
+        cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
+              tf->trapno, cpuid(), tf->eip, rcr2());
+        panic("trap");
+    }
+    // In user space, assume process misbehaved.
+    // myproc()->killed = 1; lo comentamos pues la excepcion sabemos que tenia que salir al cambiar el esquema de reservas de memoria
+  	*/
+    
+    break;	
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){ // estudiar condiciones y permitir ejecuciones en x casos [(si estamos en el kernel), (2 primeros bits que indican anillo del proceso)]
         // In kernel, it must be our mistake.
