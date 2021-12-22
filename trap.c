@@ -121,36 +121,18 @@ trap(struct trapframe *tf)
     
     break;	
   default:
-    if(myproc() == 0 || (tf->cs&3) == 0){ // estudiar condiciones y permitir ejecuciones en x casos [(si estamos en el kernel), (2 primeros bits que indican anillo del proceso)]
-        // In kernel, it must be our mistake.
-        // Asignamos memoria
-        char * mem = kalloc(); // reservamos memoria
-        if(mem == 0){   // si no se ha podido reservar
-            cprintf("allocuvm out of memory\n");
-            deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
-            //return 0;
-        }
-        memset(mem, 0, PGSIZE); 
-        // Mapeamos lo reservado a la direccion virtual que habia provocado la excepcion
-        if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U)) {   // comprobamos si se ha podido mapear lo reservado
-            cprintf("allocuvm out of memory (2)\n");
-            deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
-            kfree(mem);
-            // MATAMOS AL PROCESO ¿?¿?¿?
-           //return 0;
-        }
-        cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
+	if(myproc() == 0 || (tf->cs&3) == 0){
+      	// In kernel, it must be our mistake.
+      	cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
-        panic("trap");
-    }
-    // In user space, assume process misbehaved.
-    cprintf("pid %d %s: trap %d err %d on cpu %d "
+      	panic("trap");
+    	}
+    	// In user space, assume process misbehaved.
+    	cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
-    // myproc()->killed = 1; lo comentamos pues la excepcion sabemos que tenia que salir al cambiar el esquema de reservas de memoria
-  }
-
+    	myproc()->killed = 1;
   // Force process exit if it has been killed and is in user space.
   // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
@@ -166,4 +148,6 @@ trap(struct trapframe *tf)
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
     exit(tf->trapno++);
+  }
+
 }
