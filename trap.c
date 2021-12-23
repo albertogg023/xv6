@@ -83,56 +83,50 @@ trap(struct trapframe *tf)
   // Fallo de pagina
   case 14:
     // comprobamos la direccion que ha provocado el error
-    // Estos son casos de error, ¿matamos proceso?
-    if(rcr2() > KERNBASE || rcr2() > myproc()->sz)
+
+    if(rcr2() >= KERNBASE || rcr2() > myproc()->sz || (PGROUNDDOWN(rcr2()) >= tf->esp-PGSIZE*2 && PGROUNDDOWN(rcr2()) <= tf->esp-PGSIZE)){
+	  cprintf("Proceso ha producido uno de los tres errores\n");
     	myproc()->killed = 1;
+	  return;
+    }
     else{
-	char * mem = kalloc(); // reservamos memoria
-	mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U);
+      cprintf("Proceso ha reservado memoria\n");
+      char * mem = kalloc(); // reservamos memoria
+
+      if(mem == 0){   // si no se ha podido reservar
+        cprintf("allocuvm out of memory\n");
+        kfree(mem);
+        myproc()->killed = 1;
+        return ;
+      }
+      if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U) == -1) {   // comprobamos si se ha podido mapear lo reservado
+        cprintf("allocuvm out of memory (2)\n");
+        deallocuvm(myproc()->pgdir, myproc()->sz - PGSIZE, myproc()->sz );
+        kfree(mem);
+        myproc()->killed = 1;
+        return;
+      }
     }
     cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
-        // In kernel, it must be our mistake.
-        // Asignamos memoria
-        /*
-        if(mem == 0){   // si no se ha podido reservar
-            cprintf("allocuvm out of memory\n");
-            deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
-            //return 0;
-        }
-        memset(mem, 0, PGSIZE);
-        // Mapeamos lo reservado a la direccion virtual que habia provocado la excepcion
-        if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U)) {   // comprobamos si se ha podido mapear lo reservado
-            cprintf("allocuvm out of memory (2)\n");
-            deallocuvm(myproc()->pgdir, myproc()->sz, myproc()->sz - PGSIZE);
-            kfree(mem);
-            // MATAMOS AL PROCESO ¿?¿?¿?
-           //return 0;
-        }
-        cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
-              tf->trapno, cpuid(), tf->eip, rcr2());
-        panic("trap");
-    }
-    // In user space, assume process misbehaved.
-    // myproc()->killed = 1; lo comentamos pues la excepcion sabemos que tenia que salir al cambiar el esquema de reservas de memoria
-  	*/
-    
     break;	
-  default:
-	if(myproc() == 0 || (tf->cs&3) == 0){
-      	// In kernel, it must be our mistake.
-      	cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
-              tf->trapno, cpuid(), tf->eip, rcr2());
-      	panic("trap");
-    	}
-    	// In user space, assume process misbehaved.
-    	cprintf("pid %d %s: trap %d err %d on cpu %d "
+    default:
+      if(myproc() == 0 || (tf->cs&3) == 0){
+          // In kernel, it must be our mistake.
+          cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
+                tf->trapno, cpuid(), tf->eip, rcr2());
+          panic("trap");
+      }
+        // In user space, assume process misbehaved.
+      cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
-    	myproc()->killed = 1;
+      myproc()->killed = 1;
+      break;
+  }
   // Force process exit if it has been killed and is in user space.
   // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
@@ -148,6 +142,5 @@ trap(struct trapframe *tf)
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
     exit(tf->trapno++);
-  }
 
 }
