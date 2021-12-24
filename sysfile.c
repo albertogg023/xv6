@@ -76,6 +76,8 @@ sys_dup2(void)
  	return -1;
  if(argint(1,&fd_new)<0 || fd_new<0)
  	return -1;
+ if(fd_new > 16 || fd_old > 16)
+	 return -1;
  if(fd_new == fd_old)
  	return fd_new;
  if(myproc()->ofile[fd_new] != 0)
