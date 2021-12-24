@@ -84,15 +84,21 @@ trap(struct trapframe *tf)
   case 14:
     // comprobamos la direccion que ha provocado el error
 
-    if(rcr2() >= KERNBASE || rcr2() > myproc()->sz || (PGROUNDDOWN(rcr2()) >= tf->esp-PGSIZE*2 && PGROUNDDOWN(rcr2()) <= tf->esp-PGSIZE)){
-	  cprintf("Proceso ha producido uno de los tres errores\n");
+    if(rcr2() >= KERNBASE) {
+	    cprintf("Proceso ha pedido una direccion del sistema operativo\n");
     	myproc()->killed = 1;
-	  return;
-    }
-    else{
+	    return;
+    } else if(rcr2() > myproc()->sz){
+      cprintf("Proceso ha pedido una direccion fuera de su rango valido\n");
+    	myproc()->killed = 1;
+	    return;
+    }else if((PGROUNDDOWN(rcr2()) >= tf->esp-PGSIZE*2 && PGROUNDDOWN(rcr2()) <= tf->esp-PGSIZE)){
+      cprintf("Proceso ha pedido una direccion de la pagina de guarda\n");
+    	myproc()->killed = 1;
+	    return;
+    }else{
       cprintf("Proceso ha reservado memoria\n");
       char * mem = kalloc(); // reservamos memoria
-
       if(mem == 0){   // si no se ha podido reservar
         cprintf("allocuvm out of memory\n");
         kfree(mem);
