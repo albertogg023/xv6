@@ -1,11 +1,24 @@
 #include "types.h"
+#include "user.h"
 #include "x86.h"
-#include "defs.h"
-#include "date.h"
+//#include "defs.h"
 #include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "date.h"
+
+int sys_freemem(void){
+    int type;
+    if(argint(0, &type) < 0)
+        return -1;
+   
+    if(type==0)
+        return getLengthFreeList();
+    else
+        return getLengthFreeList()*PGSIZE;
+}
+
 
 int
 sys_date(void){

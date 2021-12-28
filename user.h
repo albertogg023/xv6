@@ -25,6 +25,7 @@ extern int sleep(int);
 extern int uptime(void);
 extern int date(struct rtcdate *);
 extern int dup2(int oldfd, int newfd);
+extern int freemem(int type);
 
 // ulib.c
 extern int stat(const char*, struct stat*);

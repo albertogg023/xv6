@@ -21,7 +21,10 @@ struct {
   struct spinlock lock;
   int use_lock;
   struct run *freelist;
+  int lengthFreeList;   //////////////
 } kmem;
+
+//extern struct kmem;
 
 // Initialization happens in two phases.
 // 1. main() calls kinit1() while still using entrypgdir to place just
@@ -33,7 +36,9 @@ kinit1(void *vstart, void *vend)
 {
   initlock(&kmem.lock, "kmem");
   kmem.use_lock = 0;
+  kmem.lengthFreeList = 0;
   freerange(vstart, vend);
+  ////////////
 }
 
 void
@@ -72,6 +77,8 @@ kfree(char *v)
   r = (struct run*)v;
   r->next = kmem.freelist;
   kmem.freelist = r;
+  ++kmem.lengthFreeList;    /////////////////////
+  //cprintf("NUMERO MARCOS LIBRES: %d", kmem.lengthFreeList);
   if(kmem.use_lock)
     release(&kmem.lock);
 }
@@ -89,8 +96,14 @@ kalloc(void)
   r = kmem.freelist;
   if(r)
     kmem.freelist = r->next;
+  --kmem.lengthFreeList;   ///////////////////
+  //cprintf("NUMERO MARCOS LIBRES: %d", kmem.lengthFreeList);   
   if(kmem.use_lock)
     release(&kmem.lock);
-  return (char*)r;
+  return (char*)r;  // devuelve una direccion virtual en realidad
 }
-
+extern
+int
+getLengthFreeList(){
+    return kmem.lengthFreeList;
+}
