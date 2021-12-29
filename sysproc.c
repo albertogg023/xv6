@@ -14,10 +14,11 @@ int sys_freemem(void){  // llamada al sistema FREEMEM
     if(type>1)
        return -1;
 
-    if(type==0)
+    if(type==F_PAGES)
         return getLengthFreeList();
-    else
+    else if(type==F_BYTES)
         return getLengthFreeList()*PGSIZE;
+    return -1;
 }
 
 int
@@ -115,8 +116,7 @@ sys_sleep(void)
   return 0;
 }
 
-// return how many clock tick interrupts have occurred
-// since start.
+// Return how many clock tick interrupts have occurred since start.
 int
 sys_uptime(void)
 {

@@ -193,3 +193,5 @@ void            clearpteu(pde_t *pgdir, char *uva);
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 
 #define NULL 0
+#define F_PAGES 0
+#define F_BYTES 1

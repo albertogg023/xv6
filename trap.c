@@ -85,19 +85,19 @@ trap(struct trapframe *tf)
     // comprobamos la direccion que ha provocado el error
 
     if(rcr2() >= KERNBASE) {
-	    cprintf("Proceso ha pedido una direccion del sistema operativo\n");
+	    cprintf("Process killed: the process asked for a kernel memory direction \n");
     	myproc()->killed = 1;
 	    return;
     } else if(rcr2() > myproc()->sz){
-      cprintf("Proceso ha pedido una direccion fuera de su rango valido\n");
+        cprintf("Process killed: the process asked for more directions than permitted \n");          
     	myproc()->killed = 1;
 	    return;
     }else if((PGROUNDDOWN(rcr2()) >= tf->esp-PGSIZE*2 && PGROUNDDOWN(rcr2()) <= tf->esp-PGSIZE)){
-      cprintf("Proceso ha pedido una direccion de la pagina de guarda\n");
+        cprintf("Process killed: stack overflow \n");       
     	myproc()->killed = 1;
 	    return;
     }else{
-      cprintf("Proceso ha reservado memoria\n");
+      //cprintf("Proceso ha reservado memoria\n");
       char * mem = kalloc(); // reservamos memoria
       if(mem == 0){   // si no se ha podido reservar
         cprintf("allocuvm out of memory\n");

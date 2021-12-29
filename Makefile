@@ -186,7 +186,14 @@ UPROGS=\
 	_zombie\
 	_date\
 	_dup2test\
-	_freemem\
+	_exitwait\
+	_tsbrk1\
+	_tsbrk2\
+	_tsbrk3\
+	_tsbrk4\
+	_tsbrk5\
+	_tfreem\
+	_big
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
