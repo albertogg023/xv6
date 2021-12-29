@@ -4,11 +4,12 @@ struct file;
 struct inode;
 struct pipe;
 struct proc;
-struct rtcdate;
+struct rtcdate; // para syscall date
 struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+
 
 // bio.c
 void            binit(void);
@@ -68,6 +69,8 @@ char*           kalloc(void);
 void            kfree(char*);
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);
+int             freemem(int type);
+int             getLengthFreeList();
 
 // kbd.c
 void            kbdintr(void);

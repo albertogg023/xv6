@@ -1,27 +1,27 @@
 #include "types.h"
-#include "user.h"
 #include "x86.h"
-//#include "defs.h"
+#include "defs.h"
 #include "param.h"
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
 #include "date.h"
 
-int sys_freemem(void){
+int sys_freemem(void){  // llamada al sistema FREEMEM
     int type;
     if(argint(0, &type) < 0)
         return -1;
-   
+    if(type>1)
+       return -1;
+
     if(type==0)
         return getLengthFreeList();
     else
         return getLengthFreeList()*PGSIZE;
 }
 
-
 int
-sys_date(void){
+sys_date(void){ // llamada al sistema DATE
     struct rtcdate * r = NULL;
 
     if(argptr(0, (void**)&r, sizeof(struct rtcdate)) < 0)
@@ -31,7 +31,6 @@ sys_date(void){
 
     return 0;
 }
-
 
 int
 sys_fork(void)
@@ -55,10 +54,8 @@ int
 sys_wait(void)
 {
   int *status;
-  // sacamos status
-  // desplazar status  
-    if(argptr(0, (void**)&status, sizeof(int)) < 0)
-        return -1;
+  if(argptr(0, (void**)&status, sizeof(int)) < 0)
+     return -1;
   return wait(status);
 }
 
@@ -79,7 +76,7 @@ sys_getpid(void)
 }
 
 int
-sys_sbrk(void)
+sys_sbrk(void)  // llamada al sistema SBRK. Es un aumento de memoria del proceso de forma diferida 
 {
   int addr;
   int n;

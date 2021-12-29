@@ -185,7 +185,8 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_date\
-	_dup2test
+	_dup2test\
+	_freemem\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
