@@ -40,13 +40,11 @@ exec(char *path, char **argv)
 
   // Load program into memory.
   sz = 0;
-  int size_load = 0;
   for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
     if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
       goto bad;
     if(ph.type != ELF_PROG_LOAD || ph.memsz == 0)
       continue;
-    size_load += ph.memsz;
     if(ph.memsz < ph.filesz)
       goto bad;
     if(ph.vaddr + ph.memsz < ph.vaddr)
@@ -61,6 +59,10 @@ exec(char *path, char **argv)
   iunlockput(ip);
   end_op();
   ip = 0;
+
+  // Reservamos tantas páginas en la pila como el tamaño de los segmentos código y datos
+  
+
 
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.

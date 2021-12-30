@@ -98,8 +98,9 @@ trap(struct trapframe *tf)
         cprintf("allocuvm out of memory\n");
         kfree(mem);
         myproc()->killed = 1;
-        return ;
+        return;
       }
+      memset(mem, 0, PGSIZE);   // inicializamos a cero los bits de la página para quitar basura
       if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U) == -1) {   // comprobamos si se ha podido mapear lo reservado
         cprintf("allocuvm out of memory (2)\n");
         deallocuvm(myproc()->pgdir, myproc()->sz - PGSIZE, myproc()->sz );
