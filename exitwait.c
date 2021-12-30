@@ -52,7 +52,7 @@ forktest(void)
       printf(1, "wait stopped early\n");
       exit(-1);
     }
-    if (WIFEXITED (status))
+    if (WIFEXITED(status))
       printf (1, "Exited child %d, exitcode %d\n", pid, WEXITSTATUS(status));
     else if (WIFSIGNALED(status))
       printf (1, "Exited child (failure) %d, trap %d\n", pid, WEXITTRAP(status));

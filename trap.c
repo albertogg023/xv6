@@ -39,11 +39,11 @@ trap(struct trapframe *tf)
   // Llamadas al sistema
   if(tf->trapno == T_SYSCALL){
     if(myproc()->killed)
-      exit(tf->trapno++);
+      exit(tf->trapno);
     myproc()->tf = tf;
     syscall();
     if(myproc()->killed)
-      exit(tf->trapno++);
+      exit(tf->trapno);
     return;
   }
   // Interrupciones HW
@@ -82,22 +82,17 @@ trap(struct trapframe *tf)
   //PAGEBREAK: 14
   // Fallo de pagina
   case 14:
-    // comprobamos la direccion que ha provocado el error
-
+    // Comprobamos la dirección que ha provocado el error
     if(rcr2() >= KERNBASE) {
 	    cprintf("Process killed: the process asked for a kernel memory direction \n");
     	myproc()->killed = 1;
-	    return;
     } else if(rcr2() > myproc()->sz){
         cprintf("Process killed: the process asked for more directions than permitted \n");          
     	myproc()->killed = 1;
-	    return;
     }else if((PGROUNDDOWN(rcr2()) >= tf->esp-PGSIZE*2 && PGROUNDDOWN(rcr2()) <= tf->esp-PGSIZE)){
         cprintf("Process killed: stack overflow \n");       
     	myproc()->killed = 1;
-	    return;
     }else{
-      //cprintf("Proceso ha reservado memoria\n");
       char * mem = kalloc(); // reservamos memoria
       if(mem == 0){   // si no se ha podido reservar
         cprintf("allocuvm out of memory\n");
@@ -137,7 +132,7 @@ trap(struct trapframe *tf)
   // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
-    exit(tf->trapno++);
+    exit(tf->trapno+1); // por
 
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
@@ -147,6 +142,6 @@ trap(struct trapframe *tf)
 
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
-    exit(tf->trapno++);
+    exit(tf->trapno+1);
 
 }

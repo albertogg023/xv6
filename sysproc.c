@@ -40,21 +40,20 @@ sys_fork(void)
 }
 
 int
-sys_exit(void)
+sys_exit(void)  // llamada al sistema EXIT
 {
   int status;
   if(argint(0, &status) < 0)
     return -1;
   status = status << 8;
-  myproc()->status = status;
   exit(status);
   return 0;  // not reached
 }
 
 int
-sys_wait(void)
+sys_wait(void)  // llamada al sistema WAIT
 {
-  int *status;
+  int * status;
   if(argptr(0, (void**)&status, sizeof(int)) < 0)
      return -1;
   return wait(status);

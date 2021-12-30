@@ -264,6 +264,7 @@ exit(int status)
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE; // ponemos en la ptable que el proceso ha hecho exit, poniendolo como un proceso zombie
+  curproc->status = status; // ponemos en la ptable el status del proceso 
   sched();  // cambiamos al hilo planificador
   panic("zombie exit");
 }
@@ -271,7 +272,7 @@ exit(int status)
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
-wait(int *status)
+wait(int * status)
 {
   struct proc *p;
   int havekids, pid;
@@ -290,7 +291,7 @@ wait(int *status)
         p->kstack = 0;
         freevm(p->pgdir);   // liberamos su memoria virtual
         p->pid = 0;
-	*status = p->status;
+	    *status = p->status;
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;

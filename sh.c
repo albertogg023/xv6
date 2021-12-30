@@ -146,7 +146,7 @@ main(void)
 {
   static char buf[100];
   int fd;
-
+  int status;
   // Ensure that three file descriptors are open.
   while((fd = open("console", O_RDWR)) >= 0){
     if(fd >= 3){
@@ -166,7 +166,11 @@ main(void)
     }
     if(fork1() == 0)
       runcmd(parsecmd(buf));
-   printf(wait(0),"Output code: %d");
+    wait(&status);
+    if(WIFEXITED(status))
+        printf(1,"Output code: %d \n", WEXITSTATUS(status));
+    if(WIFSIGNALED(status))
+        printf(1, "Output code: %d \n", WEXITTRAP(status));
   }
   exit(0);
 }
