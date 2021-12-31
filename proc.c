@@ -291,7 +291,7 @@ wait(int * status)
         p->kstack = 0;
         freevm(p->pgdir);   // liberamos su memoria virtual
         p->pid = 0;
-	    *status = p->status;
+	    *status = p->status;    // asignamos el status del hijo al parametro status del proceso padre
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;

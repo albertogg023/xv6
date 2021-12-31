@@ -9,9 +9,9 @@
 
 int sys_freemem(void){  // llamada al sistema FREEMEM
     int type;
-    if(argint(0, &type) < 0)
+    if(argint(0, &type) < 0)    // comprobamos que se haya pasado el argumento
         return -1;
-    if(type>1)
+    if(type>1)  // si el type no es ni 0 ni 1
        return -1;
 
     if(type==F_PAGES)
@@ -25,10 +25,10 @@ int
 sys_date(void){ // llamada al sistema DATE
     struct rtcdate * r = NULL;
 
-    if(argptr(0, (void**)&r, sizeof(struct rtcdate)) < 0)
+    if(argptr(0, (void**)&r, sizeof(struct rtcdate)) < 0)   // comprobamos que se haya pasado el argumento
         return -1;
 
-    cmostime(r);
+    cmostime(r);    // realizamos la llamada que nos devuelve los datos necesarios
 
     return 0;
 }
@@ -43,10 +43,13 @@ int
 sys_exit(void)  // llamada al sistema EXIT
 {
   int status;
-  if(argint(0, &status) < 0)
+  if(argint(0, &status) < 0)    // comprobamos que se haya pasado el argumento
     return -1;
-  status = status << 8;
-  exit(status);
+
+  status = status << 8; // desplazamos el status para que se adecue al formato del exit
+  
+  exit(status); // realizamos la llamada exit
+  
   return 0;  // not reached
 }
 
@@ -54,9 +57,10 @@ int
 sys_wait(void)  // llamada al sistema WAIT
 {
   int * status;
-  if(argptr(0, (void**)&status, sizeof(int)) < 0)
+  if(argptr(0, (void**)&status, sizeof(int)) < 0)   // comprobamos que se haya pasado el argumento
      return -1;
-  return wait(status);
+
+  return wait(status);  // realizamos la llamada wait
 }
 
 int
@@ -78,13 +82,12 @@ sys_getpid(void)
 int
 sys_sbrk(void)  // llamada al sistema SBRK. Es un aumento de memoria del proceso de forma diferida 
 {
-  int addr;
   int n;
-  
   if(argint(0, &n) < 0) // si los argumentos no se han pasado bien    
     return -1;  // no hacemos nada y devolvemos codigo de error
   
-  addr = myproc()->sz; // la direccion que nos devuelve es igual al size (por el esquema de direccion de xv6)
+  int addr;
+  addr = myproc()->sz; // la direccion que nos devuelve es igual al size (por el esquema de direccionamiento de xv6)
 
   if(n >= 0){  
     myproc()->sz +=n;   // aumentamos la memoria del proceso

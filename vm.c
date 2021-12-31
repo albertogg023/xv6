@@ -69,8 +69,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)  // hemos quitado
     if((pte = walkpgdir(pgdir, a, 1)) == 0)
       return -1;
     if(*pte & PTE_P)
-       continue;
-      //panic("remap");
+      panic("remap");
     *pte = pa | perm | PTE_P;
     if(a == last)
       break;
@@ -325,10 +324,9 @@ copyuvm(pde_t *pgdir, uint sz)
     return 0;
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
-        continue;
-        // panic("copyuvm: pte should exist");
-   // if(!(*pte & PTE_P))
-     // continue;
+        continue;   // ya que es normal que haya direcciones del proceso que no tengan su correspondiente marco en memoria física (lazy alloc)
+    if(!(*pte & PTE_P))
+        continue;   // ya que es normal que haya direcciones del proceso que no tengan su correspondiente marco en memoria física (lazy alloc)
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)

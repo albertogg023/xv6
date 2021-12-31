@@ -436,9 +436,9 @@ bmap(struct inode *ip, uint bn)
 static void
 itrunc(struct inode *ip)
 {
-  int i, j;
-  struct buf *bp;
-  uint *a;
+  int i, j, k;
+  struct buf * bp, * bpAux;
+  uint * a, * aAux;
 
   for(i = 0; i < NDIRECT; i++){
     if(ip->addrs[i]){
@@ -459,11 +459,25 @@ itrunc(struct inode *ip)
     ip->addrs[NDIRECT] = 0;
   }
    
-    // TODO: HAY QUE IMPLEMENTAR LIBERACION BTI
-    if (ip->addrs[NDIRECT+1]){
-      bp = bread(ip->dev, ip->add)
+  if(ip->addrs[NDIRECT+1]){
+    bpAux = bread(ip->dev, ip->addrs[NDIRECT+1]);   // obtenemos en exclusión mutua el BDI
+    aAux = (uint*)bpAux->data;  // obtenemos sus datos
+    for(k = 0; k < NINDIRECT; k++){   // para cada bloque BSI del bloque BDI
+      if(aAux[k]){  // si no estaba libre
+        bp = bread(ip->dev, aAux[k]);   // obtenemos en exclusión mutua el BSI
+        a = (uint*)bp->data;    // obtenemos sus datos
+        for(j = 0; j < NINDIRECT; j++){ // para cada bloque lógico de datos del BSI
+          if(a[j])  // si no estaba libre
+            bfree(ip->dev, a[j]);   // lo liberamos
+        }
+        bfree(ip->dev, aAux[k]);    // borramos el array de datos del bloque
+        brelse(bp); // liberamos la exclusión del BSI
+      }
     }
-
+    brelse(bpAux);
+    bfree(ip->dev, ip->addrs[NDIRECT+1]);
+    ip->addrs[NDIRECT+1] = 0; 
+  }
   ip->size = 0;
   iupdate(ip);
 }
