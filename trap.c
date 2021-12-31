@@ -96,17 +96,16 @@ trap(struct trapframe *tf)
       char * mem = kalloc(); // reservamos memoria
       if(mem == 0){   // si no se ha podido reservar
         cprintf("allocuvm out of memory\n");
-        kfree(mem);
+        //kfree(mem);
         myproc()->killed = 1;
-        return;
-      }
-      memset(mem, 0, PGSIZE);   // inicializamos a cero los bits de la página para quitar basura
-      if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U) == -1) {   // comprobamos si se ha podido mapear lo reservado
-        cprintf("allocuvm out of memory (2)\n");
-        deallocuvm(myproc()->pgdir, myproc()->sz - PGSIZE, myproc()->sz );
-        kfree(mem);
-        myproc()->killed = 1;
-        return;
+      }else{
+        memset(mem, 0, PGSIZE);   // inicializamos a cero los bits de la página para quitar basura
+        if(mappages(myproc()->pgdir, (char*)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U) == -1) {   // comprobamos si se ha podido mapear lo reservado
+            cprintf("allocuvm out of memory (2)\n");
+           // deallocuvm(myproc()->pgdir, myproc()->sz - PGSIZE, myproc()->sz );
+            kfree(mem);
+            myproc()->killed = 1;
+        }
       }
     }
     cprintf("pid %d %s: trap %d err %d on cpu %d "
@@ -121,7 +120,7 @@ trap(struct trapframe *tf)
                 tf->trapno, cpuid(), tf->eip, rcr2());
           panic("trap");
       }
-        // In user space, assume process misbehaved.
+      // In user space, assume process misbehaved.
       cprintf("pid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,

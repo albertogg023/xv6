@@ -396,14 +396,34 @@ bmap(struct inode *ip, uint bn)
     brelse(bp);
     return addr;
   }
+  
+  bn -= NINDIRECT; 
+  if(bn < NINDIRECT*NINDIRECT){   // si el número de bloque corresponde a la seccion de los bloques doblemente indirectos
+    if((addr = ip->addrs[NDIRECT+1]) == 0) // consultamos el bloque doblemente indirecto (BDI)
+      ip->addrs[NDIRECT+1] = addr = balloc(ip->dev);    // lo creamos si no existía
+
+    bp = bread(ip->dev, addr);  // obtenemos el bloque en exlusión mutua
+    a = (uint*)bp->data;    // obtenemos sus datos, es decir, la tabla de BSIs
+    
+    if((addr = a[bn/NINDIRECT]) == 0){   // consultamos el bloque simplemente indirecto correspondiente (BSI)
+      a[bn/NINDIRECT] = addr = balloc(ip->dev); // lo creamos si no existía         
+      log_write(bp);    // anotamos en la bitácora
+    }
    
-  // TODO: HAY QUE IMPLEMENTAR BTI
-  bn -= NINDIRECT;
-  if(bn < NINDIRECT*NINDIRECT){
-     if((addr = ip->addrs[NDIRECT+1]) == 0){
-        // puede que haya que hacer dos veces balloc   
-     }
-  }
+    brelse(bp); // liberamos el BDI
+
+    bp = bread(ip->dev, addr);  // obtenemos el bloque BSI en exlusión mutua
+    a = (uint*)bp->data;    // obtenemos sus datos, es decir, la tabla de bloques de datos
+ 
+    if((addr = a[bn%NINDIRECT]) == 0){    // consultamos el bloque de datos lógico correspondiente
+      a[bn%NINDIRECT] = addr = balloc(ip->dev);   // lo creamos si no existía
+      log_write(bp);    // anotamos en la bitácora
+    }
+
+    brelse(bp); // liberamos el BSI
+
+    return addr;
+  } 
 
   panic("bmap: out of range");
 }
@@ -441,6 +461,7 @@ itrunc(struct inode *ip)
    
     // TODO: HAY QUE IMPLEMENTAR LIBERACION BTI
     if (ip->addrs[NDIRECT+1]){
+      bp = bread(ip->dev, ip->add)
     }
 
   ip->size = 0;

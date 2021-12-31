@@ -60,14 +60,9 @@ exec(char *path, char **argv)
   end_op();
   ip = 0;
 
-  // Reservamos tantas páginas en la pila como el tamaño de los segmentos código y datos
-  
-
-
-  // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
-  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
+  if((sz = allocuvm(pgdir, sz, sz + PGSIZE + sz)) == 0) // reservamos espacio para texto+datos+guarda+pila(texto+datos)
     goto bad;
   clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   sp = sz;

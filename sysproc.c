@@ -80,16 +80,17 @@ sys_sbrk(void)  // llamada al sistema SBRK. Es un aumento de memoria del proceso
 {
   int addr;
   int n;
-
+  
   if(argint(0, &n) < 0) // si los argumentos no se han pasado bien    
     return -1;  // no hacemos nada y devolvemos codigo de error
   
   addr = myproc()->sz; // la direccion que nos devuelve es igual al size (por el esquema de direccion de xv6)
 
-  if(n >= 0) // si la memoria a obtener es 0 o positiva
-    myproc()->sz += n;  // indicamos que la memoria que quiere el proceso es mayor ahora
-  else if(growproc(n) < 0)  // si no hemos podido aumentar la memoria
-    return -1;  // no hacemos nada y devolvemos codigo de error
+  if(n >= 0){  
+    myproc()->sz +=n;   // aumentamos la memoria del proceso
+    lcr3(V2P(myproc()->pgdir)); // invalidamos el TLB
+  }else if(growproc(n) < 0) // growproc hace también lcr3()
+      return -1;
  
   return addr;
 }
